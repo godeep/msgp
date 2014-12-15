@@ -246,10 +246,13 @@ func AppendComplex128(b []byte, c complex128) []byte {
 // AppendTime appends a time.Time to the slice as a MessagePack extension
 func AppendTime(b []byte, t time.Time) []byte {
 	o, n := ensure(b, TimeSize)
-	bts, _ := t.MarshalBinary()
-	o[n] = mfixext16
-	o[n+1] = TimeExtension
-	copy(o[n+2:], bts)
+	t = t.UTC()
+	sec := t.Unix()
+	nsec := int32(t.Nanosecond())
+	o[n] = mext8
+	o[n+1] = 12
+	o[n+2] = TimeExtension
+	putUnix(o[n+3:], sec, nsec)
 	return o
 }
 

@@ -983,22 +983,21 @@ func (m *Reader) ReadMapStrIntf(mp map[string]interface{}) (err error) {
 // ReadTime reads a time.Time object from the reader.
 func (m *Reader) ReadTime() (t time.Time, err error) {
 	var p []byte
-	p, err = m.r.Peek(18)
+	p, err = m.r.Peek(15)
 	if err != nil {
 		return
 	}
-	if p[0] != mfixext16 {
+	if p[0] != mext8 || p[1] != 12 {
 		err = badPrefix(TimeType, p[0])
 		return
 	}
-	if int8(p[1]) != TimeExtension {
-		err = errExt(int8(p[1]), TimeExtension)
+	if int8(p[2]) != TimeExtension {
+		err = errExt(int8(p[2]), TimeExtension)
 		return
 	}
-	err = t.UnmarshalBinary(p[2:17]) // wants 15 bytes; last byte is 0
-	if err == nil {
-		_, err = m.r.Skip(18)
-	}
+	sec, nsec := getUnix(p[3:])
+	t = time.Unix(sec, int64(nsec))
+	_, err = m.r.Skip(15)
 	return
 }
 

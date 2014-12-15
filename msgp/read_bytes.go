@@ -672,23 +672,21 @@ func ReadComplex64Bytes(b []byte) (c complex64, o []byte, err error) {
 // - TypeError{} (object not a complex64)
 // - ExtensionTypeError{} (object an extension of the correct size, but not a time.Time)
 func ReadTimeBytes(b []byte) (t time.Time, o []byte, err error) {
-	if len(b) < 18 {
+	if len(b) < 15 {
 		err = ErrShortBytes
 		return
 	}
-
-	if b[0] != mfixext16 {
+	if b[0] != mext8 || b[1] != 12 {
 		err = badPrefix(TimeType, b[0])
 		return
 	}
-
-	if int8(b[1]) != TimeExtension {
+	if int8(b[2]) != TimeExtension {
 		err = errExt(int8(b[1]), TimeExtension)
 		return
 	}
-
-	err = t.UnmarshalBinary(b[2:17])
-	o = b[18:]
+	sec, nsec := getUnix(b[3:])
+	t = time.Unix(sec, int64(nsec))
+	o = b[15:]
 	return
 }
 

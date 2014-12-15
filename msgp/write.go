@@ -640,21 +640,38 @@ func (mw *Writer) WriteIdent(e Encodable) error {
 
 // WriteTime writes a time.Time object to the wire
 func (mw *Writer) WriteTime(t time.Time) error {
-	var bts []byte
-	var err error
-	bts, err = t.MarshalBinary()
+	// this encoding is just a 12-byte
+	// unix time
+
+	t = t.UTC()
+	sec := t.Unix()
+	nsec := int32(t.Nanosecond())
+
+	o, err := mw.require(15)
 	if err != nil {
 		return err
 	}
-	o, err := mw.require(18)
-	if err != nil {
-		return err
-	}
-	mw.buf[o] = mfixext16                   // byte 0 is mfixext16
-	mw.buf[o+1] = byte(int8(TimeExtension)) // TimeExtension byte
-	copy(mw.buf[o+2:], bts)                 // time is 15 bytes
-	mw.buf[o+17] = 0                        // last byte is 0
+	mw.buf[o] = mext8
+	mw.buf[o+1] = 12
+	mw.buf[o+2] = TimeExtension
+	putUnix(mw.buf[o+3:], sec, nsec)
 	return nil
+	/*
+		var bts []byte
+		var err error
+		bts, err = t.MarshalBinary()
+		if err != nil {
+			return err
+		}
+		o, err := mw.require(18)
+		if err != nil {
+			return err
+		}
+		mw.buf[o] = mfixext16                   // byte 0 is mfixext16
+		mw.buf[o+1] = byte(int8(TimeExtension)) // TimeExtension byte
+		copy(mw.buf[o+2:], bts)                 // time is 15 bytes
+		mw.buf[o+17] = 0                        // last byte is 0
+		return nil*/
 }
 
 // WriteIntf writes the concrete type of 'v'.
