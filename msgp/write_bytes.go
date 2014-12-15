@@ -1,25 +1,11 @@
 package msgp
 
 import (
-	"fmt"
 	"math"
 	"reflect"
 	"time"
 	"unsafe"
 )
-
-// ErrUnsupportedType is returned
-// when a bad argument is supplied
-// to a function that takes `interface{}`.
-type ErrUnsupportedType struct {
-	T reflect.Type
-}
-
-// Error implements error
-func (e *ErrUnsupportedType) Error() string { return fmt.Sprintf("msgp: type %q not supported", e.T) }
-
-// Resumable returns 'true' for ErrUnsupportedType
-func (e *ErrUnsupportedType) Resumable() bool { return true }
 
 // ensure 'sz' extra bytes in 'b' btw len(b) and cap(b)
 func ensure(b []byte, sz int) ([]byte, int) {
