@@ -685,7 +685,7 @@ func ReadTimeBytes(b []byte) (t time.Time, o []byte, err error) {
 		return
 	}
 	sec, nsec := getUnix(b[3:])
-	t = time.Unix(sec, int64(nsec))
+	t = time.Unix(sec, int64(nsec)).Local()
 	o = b[15:]
 	return
 }
